@@ -1,4 +1,4 @@
-package com.leinuoa.flowable.flowabletest.config;
+package com.leinuoa.flowable.config;
 
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;

@@ -1,4 +1,4 @@
-package com.leinuoa.flowable.flowabletest;
+package com.leinuoa.flowable;
 
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Bean;
 import java.util.List;
 
 @SpringBootApplication
-public class FlowableTestApplication {
+public class FlowableApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FlowableTestApplication.class, args);
+        SpringApplication.run(FlowableApplication.class, args);
     }
 
     @Bean
