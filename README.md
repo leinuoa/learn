@@ -1,4 +1,4 @@
-# 分库分表
+# sharding-jdbc分库分表
 sharding-jdbc
 # flowable流程
 flowable-test
