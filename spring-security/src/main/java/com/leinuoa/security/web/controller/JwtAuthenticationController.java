@@ -44,8 +44,4 @@ public class JwtAuthenticationController {
         }
     }
 
-    @GetMapping("/test/{str}")
-    public String test(@PathVariable String str){
-        return "hello "+str;
-    }
 }
