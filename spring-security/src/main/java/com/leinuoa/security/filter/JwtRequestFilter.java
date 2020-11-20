@@ -46,7 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 System.out.println("JWT Token has expired");
             }
         } else {
-            logger.warn("没有访问权限，请登录后访问！");
+            logger.warn("未授权！");
         }
 
         // Once we get the token validate it.
@@ -68,6 +68,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
+        // 放行
         chain.doFilter(request, response);
     }
 

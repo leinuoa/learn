@@ -82,7 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .disable()
                 .authorizeRequests()
                 .antMatchers(
-                        "/authenticate",
+                        "/","/authenticate",
                         "/test/**",
                         "/js/**",
                         "/css/**",

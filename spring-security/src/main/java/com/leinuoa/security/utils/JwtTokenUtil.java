@@ -16,16 +16,18 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -2550185165626007488L;
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    // token 失效时间30分钟
+    public static final long JWT_TOKEN_VALIDITY = 30 * 60;
+
     @Value("${jwt.secret}")
     private String secret;
 
-    // retrieve username from jwt token
+    // 从jwt token 检索用户名
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    // retrieve expiration date from jwt token
+    // 从jwt token 检索到期日期
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }
@@ -35,36 +37,46 @@ public class JwtTokenUtil implements Serializable {
         return claimsResolver.apply(claims);
     }
 
-    // for retrieveing any information from token we will need the secret key
+    // 根据签名获得检索信息
     private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
 
-    // check if the token has expired
+    // 检查token是否过期
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
 
-    // generate token for user
+    // 为用户生成token
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
-    /* while creating the token -
-     * 1. Define  claims of the token, like Issuer, Expiration, Subject, and the ID
-     * 2. Sign the JWT using the HS512 algorithm and secret key.
-     * 3. According to JWS Compact Serialization(https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#section-3.1)
-     *   compaction of the JWT to a URL-safe string
+    /*
+     * 定义令牌的声明，如颁发者、过期、主题和ID;
+     * 使用HS512算法和密钥对JWT进行签名;
+     * 根据JWS序列化将JWT压缩为URL安全字符串。
      */
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
+        return Jwts
+                .builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(generateExpirationDate())
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
     }
 
-    // validate token
+    // 生成token的过期时间
+    private Date generateExpirationDate() {
+        return new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000);
+    }
+
+
+    // 校验token
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
