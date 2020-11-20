@@ -1,0 +1,32 @@
+server:
+  port: 8098
+
+# DataSource Config
+spring:
+  application:
+    name: security
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:9527/sso?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2b8&nullCatalogMeansCurrent=true&useSSL=false
+    username: root
+    password: 123456
+    # Hikari
+    hikari:
+      autoCommit: false
+      minimumIdle: 5
+      maximumPoolSize: 20
+      idleTimeout: 3600000
+      poolName: SpringBootHikariCP
+      connectionTimeout: 30000
+      connectionTestQuery: SELECT 1
+  # thymeleafÄ£°å
+  thymeleaf:
+    cache: false
+    mode: HTML5
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+# jwt SigningKey
+jwt:
+  secret: mySecurity
