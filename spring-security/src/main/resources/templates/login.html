@@ -6,22 +6,28 @@
     <link rel="stylesheet" type="text/css" th:href="@{~/css/lib/bootstrap-reboot.css}">
     <link rel="stylesheet" type="text/css" th:href="@{~/css/lib/bootstrap.css}">
     <link rel="stylesheet" type="text/css" th:href="@{~/css/lib/font-awesome.min.css}">
+
 </head>
 <body class="login-page">
     <div class="container">
         <h2 class="sign-in-heading">Please sign in</h2>
-        <label for="username" class="sr-only">Username</label>
-        <input type="email" id="username" class="form-control" placeholder="Username" required>
-        <label for="password" class="sr-only">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="Password" required>
-        <div class="checkbox">
-            <label>
-                <input type="checkbox" value="remember-me"> Remember me
-            </label>
-        </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <form th:action="@{/sys/login}" name="form" role="form" action="/sys/login" method="post">
+            <div class="form-group">
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <label for="password" class="sr-only">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" value="remember-me"> Remember me
+                </label>
+            </div>
+            <input class="btn btn-lg btn-primary btn-block" type="submit" value="Sign in"/>
+        </form>
     </div>
 </body>
-<!-- script里面要加type="module"，这样浏览器才会把相关的代码当作ES6的module来对待 -->
-<script th:src="@{~/ts/login.js}" type="module"></script>
+
 </html>

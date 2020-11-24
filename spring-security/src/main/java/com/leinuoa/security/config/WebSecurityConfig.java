@@ -1,22 +1,22 @@
 package com.leinuoa.security.config;
 
-import com.leinuoa.security.filter.JwtRequestFilter;
 import com.leinuoa.security.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Spring Security的配置类 WebSecurityConfig
@@ -29,7 +29,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  *
  * 注意： springSecurity在2.0之后就会默认自动开启CSRF跨站防护，仅仅GET|HEAD|TRACE|OPTIONS这4类方法会被放行。源码：DefaultRequiresCsrfMatcher.class
  * 解决办法：
- *  1. 将CSRF禁用掉（默认是开启的），但是这样你的网站Spring security也就失去了跨站防护的CSRF的意义;
+ *  1. 将CSRF禁用掉（默认是开启的），但是这样你的网站Spring security也就失去了跨站防护的CSRF的意义(使用jwt可以禁用掉CSRF);
  *  2. 添加_csrf的token，既然他需要，那我们就给他所要的。
  *      （1）使用Thymeleaf模板提交表单（th:action）的话表单里自动添加CSRF令牌，你可以在网页中查看表单中是不是多了类似的一行。
  *      （2）非此模板引擎的话。需要手动在表单当中添加。
@@ -38,80 +38,79 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启security注解
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
     @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    @Autowired
-    private JwtRequestFilter jwtRequestFilter;
-    @Autowired
-    private JwtUserDetailsService userService;
+    public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        authenticationManagerBuilder
+                // 设置UserDetailsService
+                .userDetailsService(jwtUserDetailService())
+                // 使用BCrypt进行密码的hash
+                .passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    protected UserDetailsService jwtUserDetailService() {
+        return new JwtUserDetailsService();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint(){
+        return new JwtAuthenticationEntryPoint();
+    }
+
+    @Bean
+    public JwtRequestFilter requestFilter() throws Exception{
+        return new JwtRequestFilter();
+    }
+
     @Bean
     public AuthenticationManager authenticationManager () throws Exception {
         return super.authenticationManager();
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
-        auth.setUserDetailsService(userService);
-        auth.setPasswordEncoder(passwordEncoder());
-        return auth;
-    }
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http
-                .formLogin()
-                .loginPage("/login")
-                .permitAll()
+                // 使用jwt，不需要csrf
+                .csrf().disable()
+                // 使用token，不需要session
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-                .logout()
-                    .invalidateHttpSession(true)
-                    .clearAuthentication(true)
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                    .logoutSuccessUrl("/login?logout")
-                    .permitAll();
-        http
-            .csrf()
-                .disable()
                 .authorizeRequests()
+                // 无需权限即可访问的资源
                 .antMatchers(
-                        "/","/authenticate","/sys/login",
-                        "/test/**",
-                        "/js/**",
-                        "/css/**",
-                        "/img/**",
-                        "/*.ico")
+                    HttpMethod.GET
+                    ,"/"
+                    ,"/login"
+                    ,"/*.html"
+                    ,"/favicon.ico"
+                    ,"/js/**"
+                    ,"/ts/**"
+                    ,"/css/**"
+                    ,"/img/**"
+                )
                 .permitAll()
-                .anyRequest()
-                .authenticated()
+                // 对于获取token的rest api要允许匿名访问
+                .antMatchers("/sys/login").permitAll()
+                // 除上面外的所有请求全部需要鉴权认证
+                .anyRequest().authenticated()
             .and()
                 .exceptionHandling()
-                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        // Add a filter to validate the tokens with every request
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-    }
+                .authenticationEntryPoint(authenticationEntryPoint());
 
-//    @Override
-//    public void configure(WebSecurity web) throws Exception {
-//        // 忽略URL
-//        web.
-//            ignoring()
-//            .antMatchers("/authenticate");
-//    }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider());
+        // 添加JWT filter
+        http.addFilterBefore(requestFilter(), UsernamePasswordAuthenticationFilter.class);
+        // 禁用缓存
+        http.headers().cacheControl();
     }
 
 }

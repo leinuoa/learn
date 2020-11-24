@@ -12,6 +12,4 @@ public interface SysUserDao extends BaseMapper<SysUser> {
 
     @Select("select name as username,password from sys_user where name = #{username}")
     SysUser findByUsername(String username);
-
-    SysUser save(SysUser user);
 }

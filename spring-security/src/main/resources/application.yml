@@ -27,6 +27,8 @@ spring:
     prefix: classpath:/templates/
     suffix: .html
 
-# jwt SigningKey
+# jwt
 jwt:
   secret: mySecurity
+  header: Authorization
+  tokenHead: Bearer

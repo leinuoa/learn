@@ -16,6 +16,9 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -2550185165626007488L;
+
+    private static final String CLAIM_KEY_USERNAME = "sub";
+    private static final String CLAIM_KEY_CREATED = "created";
     // token 失效时间30分钟
     public static final long JWT_TOKEN_VALIDITY = 30 * 60;
 
@@ -48,10 +51,12 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
 
-    // 为用户生成token
+    // 生成token
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
+        claims.put(CLAIM_KEY_CREATED, new Date(System.currentTimeMillis()));
+        return generateToken(claims);
     }
 
     /*
@@ -59,12 +64,9 @@ public class JwtTokenUtil implements Serializable {
      * 使用HS512算法和密钥对JWT进行签名;
      * 根据JWS序列化将JWT压缩为URL安全字符串。
      */
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts
-                .builder()
+    String generateToken(Map<String, Object> claims) {
+        return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(generateExpirationDate())
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
@@ -75,6 +77,38 @@ public class JwtTokenUtil implements Serializable {
         return new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000);
     }
 
+    public Boolean canTokenBeRefreshed(String token, Date lastPasswordReset) {
+        final Date created = getCreatedDateFromToken(token);
+        return !isCreatedBeforeLastPasswordReset(created, lastPasswordReset)
+                && !isTokenExpired(token);
+    }
+
+    private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
+        return (lastPasswordReset != null && created.before(lastPasswordReset));
+    }
+
+    public Date getCreatedDateFromToken(String token) {
+        Date created;
+        try {
+            final Claims claims = getAllClaimsFromToken(token);
+            created = new Date((Long) claims.get(CLAIM_KEY_CREATED));
+        } catch (Exception e) {
+            created = null;
+        }
+        return created;
+    }
+
+    public String refreshToken(String token) {
+        String refreshedToken;
+        try {
+            final Claims claims = getAllClaimsFromToken(token);
+            claims.put(CLAIM_KEY_CREATED, new Date());
+            refreshedToken = generateToken(claims);
+        } catch (Exception e) {
+            refreshedToken = null;
+        }
+        return refreshedToken;
+    }
 
     // 校验token
     public Boolean validateToken(String token, UserDetails userDetails) {

@@ -19,24 +19,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class LoginController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private JwtUserDetailsService userDetailsService;
 
-    @RequestMapping("/login")
-    public String login(){
-        return "login";
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtUserDetailsService jwtUserDetailsService;
+
+    public LoginController(AuthenticationManager authenticationManager,
+                           JwtTokenUtil jwtTokenUtil,
+                           JwtUserDetailsService jwtUserDetailsService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtUserDetailsService = jwtUserDetailsService;
     }
-    @PostMapping("/sys/login")
+
+
+    @PostMapping(path = "/sys/login")
     @ResponseBody
-    public String login(@RequestBody JwtRequest authenticationRequest){
+    public String login(String username,String password){
         String token = null;
         try {
-            authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+            authenticate(username, password);
+            final UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
             token = jwtTokenUtil.generateToken(userDetails);
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -57,5 +60,11 @@ public class LoginController {
         } catch (BadCredentialsException e) {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
+    }
+
+    @RequestMapping("/index")
+    @ResponseBody
+    public String homePage(){
+        return "登录成功！！！";
     }
 }
