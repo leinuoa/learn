@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TreeUtil<T extends TreeVo> {
-    // 作为根节点的parentId值
+    // 根节点parentId的值
     private static final String ROOT_VALUE = "0";
 
     /**
@@ -55,7 +55,6 @@ public class TreeUtil<T extends TreeVo> {
     public List<T> getRootNode(List<T> list) {
         return list.stream().filter(t -> t.getParentId().equals(ROOT_VALUE)).collect(Collectors.toList());
     }
-
 
     public static void main(String[] args) {
         TreeVo tree1 = new TreeVo("c1", "0", "四川省", 1);
