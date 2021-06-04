@@ -2,8 +2,6 @@ package com.leinuoa.learn.shardingjdbc.common;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +13,7 @@ public class TreeVo<T extends TreeVo> implements Comparable<TreeVo>{
     private String name;
     /**每一层单独排序*/
     protected Integer sort;
-    protected List<T> children = new ArrayList<>();
+    protected List<T> children;
 
     public TreeVo(String rootId){
         this.id = rootId;
