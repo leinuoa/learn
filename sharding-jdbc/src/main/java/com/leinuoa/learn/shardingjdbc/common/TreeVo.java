@@ -4,11 +4,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @NoArgsConstructor
 @Data
-public class TreeVo<T> {
+public class TreeVo<T extends TreeVo> implements Comparable<TreeVo>{
     protected String id;
     protected String parentId;
     private String name;
@@ -20,9 +21,20 @@ public class TreeVo<T> {
         this.id = rootId;
     }
 
-    public TreeVo(String id, String parentId, String name){
+    public TreeVo(String id, String parentId, String name, Integer sort){
         this.id = id;
         this.parentId = parentId;
         this.name = name;
+        this.sort = sort;
+    }
+
+    public void setChildren(List<T> children) {
+        Collections.sort(children);
+        this.children = children;
+    }
+
+    @Override
+    public int compareTo(TreeVo o) {
+        return sort.compareTo(o.getSort());
     }
 }
