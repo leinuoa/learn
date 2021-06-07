@@ -12,7 +12,7 @@ public class TreeUtil<T extends TreeVo> {
     private static final String ROOT_VALUE = "0";
 
     /**
-     * 在不知道rootId的情况下，可能有多个rootId的情况下，列表转树
+     * 列表转树，支持多树
      *
      * @param list
      * @return
