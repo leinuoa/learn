@@ -1,6 +1,7 @@
 package com.leinuoa.learn.shardingjdbc.common;
 
-import com.alibaba.fastjson.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class TreeUtil<T extends TreeVo<T>> {
+    private static final Logger logger = LoggerFactory.getLogger(TreeUtil.class);
     // 根节点parentId的值
     private static final String ROOT_VALUE = null;
 
@@ -59,20 +61,21 @@ public class TreeUtil<T extends TreeVo<T>> {
     }
 
     public static void main(String[] args) {
-
-//        String strPool = "0123456789ABCDEFGHJKLMNPQRSTUVWXY";
-//        char[] chars = strPool.toCharArray();
-//        Random random = new SecureRandom();
-//        StringBuilder res;
-//        res = new StringBuilder();
-//        while (res.length() < 23) {
-//            final int index = random.nextInt(chars.length);
-//            res.append(chars[index]);
-//        }
-//        System.out.println(res.toString());
-//        System.out.println(verifyId(res.toString()));
-
-        System.out.println(verifyId("98DPNGB8EU1T6UD808MHT6B"));
+        /*
+        String strPool = "0123456789ABCDEFGHJKLMNPQRSTUVWXY";
+        char[] chars = strPool.toCharArray();
+        Random random = new SecureRandom();
+        StringBuilder res;
+        res = new StringBuilder();
+        while (res.length() < 23) {
+            final int index = random.nextInt(chars.length);
+            res.append(chars[index]);
+        }
+        System.out.println(res.toString());
+        System.out.println(verifyId(res.toString()));
+         */
+        String verifyCode = verifyId("98DPNGB8EU1T6UD808MHT6B");
+        logger.info("=======>>>生成的校验码为：{}", verifyCode);
 
     }
 

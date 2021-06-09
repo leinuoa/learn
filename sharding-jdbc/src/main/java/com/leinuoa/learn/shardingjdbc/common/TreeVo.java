@@ -15,17 +15,6 @@ public class TreeVo<T extends TreeVo<T>> implements Comparable<TreeVo<T>>{
     protected Integer sort;
     protected List<T> children;
 
-    public TreeVo(String rootId){
-        this.id = rootId;
-    }
-
-    public TreeVo(String id, String parentId, String name, Integer sort){
-        this.id = id;
-        this.parentId = parentId;
-        this.name = name;
-        this.sort = sort;
-    }
-
     public void setChildren(List<T> children) {
         Collections.sort(children);
         this.children = children;
