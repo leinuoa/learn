@@ -7,7 +7,7 @@ import java.util.List;
 
 @NoArgsConstructor
 @Data
-public class TreeVo<T extends TreeVo> implements Comparable<TreeVo>{
+public class TreeVo<T extends TreeVo<T>> implements Comparable<TreeVo<T>>{
     protected String id;
     protected String parentId;
     private String name;
